@@ -1,5 +1,6 @@
 // sw.js - This file needs to be in the root of the directory to work,
 //         so do not move it next to the other scripts
+import RECIPE_URLS from './assets/scripts/main.js';
 
 const CACHE_NAME = 'lab-7-starter';
 
@@ -9,7 +10,7 @@ self.addEventListener('install', function (event) {
     caches.open(CACHE_NAME).then(function (cache) {
       // B6. TODO - Add all of the URLs from RECIPE_URLs here so that they are
       //            added to the cache when the ServiceWorker is installed
-      return cache.addAll([]);
+      return cache.addAll([RECIPE_URLS]);
     })
   );
 });
@@ -34,7 +35,21 @@ self.addEventListener('fetch', function (event) {
   /*******************************/
   // B7. TODO - Respond to the event by opening the cache using the name we gave
   //            above (CACHE_NAME)
+  event.respondWith(
+    caches.open(CACHE_NAME).then(function (cache) {
   // B8. TODO - If the request is in the cache, return with the cached version.
   //            Otherwise fetch the resource, add it to the cache, and return
   //            network response.
+      return cache.match(event.request).then(function (response) {
+        return (
+          response ||
+          fetch(event.request).then(function (response) {
+            cache.put(event.request, response.clone());
+            return response;
+
+          })
+        )
+      })
+    })
+  );
 });
